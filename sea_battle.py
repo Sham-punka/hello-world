@@ -170,15 +170,15 @@ class User(Player):     #класс человека
                 print("Введите целые числа! ")
                 continue
 
+            if re.fullmatch(r'-\d', x) or re.fullmatch(r'-\d', y):
+                print("Введите положительные числа от 1 до 6! ")
+                continue
+
             if not (x.isdigit()) or not (y.isdigit()):
                 print("Введите числа! ")
                 continue
 
             x, y = int(x), int(y)
-
-            if x < 0 or y < 0:
-                print("Введите положительные числа от 1 до 6! ")
-                continue
 
             return Point(x - 1, y - 1)
 
