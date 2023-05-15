@@ -1,4 +1,7 @@
+
+from itertools import product
 from random import *
+import re
 
 
 class FieldException(Exception):        #Создание собственных исключений
@@ -115,7 +118,6 @@ class Field:        #поле
                     return True
                 else:
                     self.dships += 1
-                    self.contour(ship, np=True)
                     print("Убил!")
                     return True
 
@@ -130,6 +132,7 @@ class Player:       #родительский класс игрока
     def __init__(self, field, enemy):
         self.field = field
         self.enemy = enemy
+        self.good_points = list(product(range(6), range(6)))
 
     def ask(self):
         raise NotImplementedError()
@@ -145,7 +148,9 @@ class Player:       #родительский класс игрока
 
 class AI(Player):       #класс компьютерного игрока
     def ask(self):      #ход компьютера
-        pt = Point(randint(0,5), randint(0, 5))
+        i = choice(self.good_points)
+        pt = Point(i[0], i[1])
+        del self.good_points[self.good_points.index(i)]
         print(f"Ход компьютера: {pt.x+1} {pt.y+1}")
         return pt
 
@@ -161,11 +166,19 @@ class User(Player):     #класс человека
 
             x, y = cord
 
+            if re.fullmatch(r'\d.\d+', x) or re.fullmatch(r'\d.\d+', y):
+                print("Введите целые числа! ")
+                continue
+
             if not (x.isdigit()) or not (y.isdigit()):
                 print("Введите числа! ")
                 continue
 
             x, y = int(x), int(y)
+
+            if x < 0 or y < 0:
+                print("Введите положительные числа от 1 до 6! ")
+                continue
 
             return Point(x - 1, y - 1)
 
@@ -237,6 +250,7 @@ class Game:     #класс игры
 
     def start(self):        #запуск игры
         self.play()
+
 
 g = Game()
 g.start()
