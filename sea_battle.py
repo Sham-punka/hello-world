@@ -1,7 +1,7 @@
 from random import *
 
 
-class FieldException(Exception):
+class FieldException(Exception):        #Создание собственных исключений
     pass
 
 
@@ -19,7 +19,7 @@ class ShipException(Exception):
     pass
 
 
-class Point:
+class Point:        #класс каждой точки
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -27,14 +27,14 @@ class Point:
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
-class Ship:
+class Ship:     #корабль
     def __init__(self, start, long, course):
         self.course = course
         self.start = start
         self.long = long
         self.hp = long
 
-    def points(self):
+    def points(self):       #все точки корабля
         ship_points = []
         for i in range(self.long):
             x = self.start.x
@@ -50,10 +50,10 @@ class Ship:
 
         return ship_points
 
-    def shoot(self, pt):
+    def shoot(self, pt):        #проверка на попадание в корабль
         return pt in self.points
 
-class Field:
+class Field:        #поле
     def __init__(self, open=False, size = 6):
         self.open = open
         self.size = size
@@ -72,20 +72,20 @@ class Field:
             st = st.replace("■", "О")
         return st
 
-    def out(self, d):
+    def out(self, d):       #
         return not((0 <= d.x < self.size) and (0 <= d.y < self.size))
 
-    def contour(self, ship, np=False):
+    def contour(self, ship, np=False):      #контур корабля для расстановки кораблей
         near = [(0, 0), (0, 1), (0, -1), (1, 0), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1)]
         for i in ship.points():
             for jx, jy in near:
                 pt = Point(i.x + jx, i.y + jy)
                 if not(self.out(pt)) and pt not in self.occupied:
                     if np:
-                        self.map[pt.x][pt.y] = "."
+                        self.map[pt.x][pt.y] = "Т"
                     self.occupied.append(pt)
 
-    def add_ship(self, ship):
+    def add_ship(self, ship):       #добавление корабля
 
         for i in ship.points():
             if self.out(i) or i in self.occupied:
@@ -97,7 +97,7 @@ class Field:
         self.ships.append(ship)
         self.contour(ship)
 
-    def shot(self, i):
+    def shot(self, i):      #выстрел в корабль
         if i in self.occupied:
             raise NotEmptyException()
 
@@ -117,16 +117,16 @@ class Field:
                     self.dships += 1
                     self.contour(ship, np=True)
                     print("Убил!")
-                    return False
+                    return True
 
         self.map[i.x][i.y] = "Т"
         print("Мимо!")
         return False
 
-    def begining(self):
+    def begining(self):     #обнуление занятых точек
         self.occupied = []
 
-class Player:
+class Player:       #родительский класс игрока
     def __init__(self, field, enemy):
         self.field = field
         self.enemy = enemy
@@ -134,7 +134,7 @@ class Player:
     def ask(self):
         raise NotImplementedError()
 
-    def move(self):
+    def move(self):     #совершение выстрела
         while True:
             try:
                 target = self.ask()
@@ -143,23 +143,23 @@ class Player:
             except FieldException as er:
                 print(er)
 
-class AI(Player):
-    def ask(self):
+class AI(Player):       #класс компьютерного игрока
+    def ask(self):      #ход компьютера
         pt = Point(randint(0,5), randint(0, 5))
         print(f"Ход компьютера: {pt.x+1} {pt.y+1}")
         return pt
 
 
-class User(Player):
-    def ask(self):
+class User(Player):     #класс человека
+    def ask(self):      #ход человека
         while True:
-            cords = input("Введите 2 координаты чекрез пробел: ").split()
+            cord = input("Введите 2 координаты чекрез пробел: ").split()
 
-            if len(cords) != 2:
+            if len(cord) != 2:
                 print("Введите 2 координаты! ")
                 continue
 
-            x, y = cords
+            x, y = cord
 
             if not (x.isdigit()) or not (y.isdigit()):
                 print("Введите числа! ")
@@ -170,32 +170,32 @@ class User(Player):
             return Point(x - 1, y - 1)
 
 
-class Game:
+class Game:     #класс игры
     def __init__(self, size = 6):
         self.size = size
-        player = self.random_board()
-        computer = self.random_board()
+        player = self.random_field()
+        computer = self.random_field()
         computer.open = True
 
         self.ai = AI(computer, player)
         self.us = User(player, computer)
 
-    def random_board(self):
+    def random_field(self):     #создание игровой доски
         field = None
         while field is None:
             field = self.random_place()
         return field
 
-    def random_place(self):
+    def random_place(self):     #расстановка кораблей
         lens = [3, 2, 2, 1, 1, 1, 1]
         field = Field(size=self.size)
-        attempts = 0
-        for l in lens:
+        j = 0
+        for i in lens:
             while True:
-                attempts += 1
-                if attempts > 2000:
+                j += 1
+                if j > 1000:
                     return None
-                ship = Ship(Point(randint(0, self.size), randint(0, self.size)), l, randint(0, 1))
+                ship = Ship(Point(randint(0, self.size), randint(0, self.size)), i, randint(0, 1))
                 try:
                     field.add_ship(ship)
                     break
@@ -204,7 +204,7 @@ class Game:
         field.begining()
         return field
 
-    def play(self):
+    def play(self):     #игровой цикл
         num = 0
         while True:
             print()
@@ -235,7 +235,7 @@ class Game:
                 break
             num -= 1
 
-    def start(self):
+    def start(self):        #запуск игры
         self.play()
 
 g = Game()
