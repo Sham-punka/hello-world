@@ -39,11 +39,11 @@ class Convertor:
             if base:
                 pass
         except:
-            raise ApiError('Некороктно введена исходнаяая валюта')
+            raise ApiError('Некоректно введена исходнаяая валюта')
 
         quote = ' '.join(mes)
         if quote not in value:
-            raise ApiError('Некороктно введена искомая валюта')
+            raise ApiError('Некоректно введена искомая валюта')
 
         if base == quote:
             raise ApiError('Введите различные валюты')
